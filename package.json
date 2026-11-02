@@ -1,0 +1,12 @@
+{
+  "name": "fleet-insights",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Small fleet analytics library: the sandbox repository the tb.lx factory works on.",
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "test": "node --test test/*.test.ts",
+    "report": "node src/cli.ts data/sample-trips.json"
+  }
+}

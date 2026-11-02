@@ -1,0 +1,13 @@
+{
+  "vehicles": [
+    { "id": "TRK-001", "model": "Actros", "lastServiceKm": 120000, "serviceIntervalKm": 30000 },
+    { "id": "TRK-002", "model": "Arocs", "lastServiceKm": 88000, "serviceIntervalKm": 25000 },
+    { "id": "TRK-003", "model": "eActros", "lastServiceKm": 40000, "serviceIntervalKm": 40000 }
+  ],
+  "trips": [
+    { "vehicleId": "TRK-001", "startedAt": "2026-10-01T06:00:00Z", "endedAt": "2026-10-01T11:30:00Z", "distanceKm": 420, "fuelLitres": 121.8, "odometerKm": 149420 },
+    { "vehicleId": "TRK-001", "startedAt": "2026-10-02T07:00:00Z", "endedAt": "2026-10-02T10:00:00Z", "distanceKm": 230, "fuelLitres": 66.7, "odometerKm": 149650 },
+    { "vehicleId": "TRK-002", "startedAt": "2026-10-01T05:30:00Z", "endedAt": "2026-10-01T09:00:00Z", "distanceKm": 180, "fuelLitres": 59.4, "odometerKm": 101200 },
+    { "vehicleId": "TRK-003", "startedAt": "2026-10-03T08:00:00Z", "endedAt": "2026-10-03T12:00:00Z", "distanceKm": 260, "fuelLitres": 0, "odometerKm": 52100 }
+  ]
+}
