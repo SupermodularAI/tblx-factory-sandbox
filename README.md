@@ -5,12 +5,13 @@ A small fleet analytics library and CLI. It is the **sandbox repository for the 
 ```sh
 npm test              # unit tests (node --test)
 npm run report        # summary over data/sample-trips.json
+node src/cli.ts --margin 5000 data/sample-trips.json   # service-due report with a 5000 km margin (default 1000)
 ```
 
 ## What it does
 
 - Fuel consumption (l/100 km) and driving hours per vehicle.
-- Km left to the next service, and which vehicles are due within a margin.
+- Km left to the next service, and which vehicles are due within a margin (default 1000 km, set with `--margin <km>`).
 
 ## Ideas for test tickets
 
