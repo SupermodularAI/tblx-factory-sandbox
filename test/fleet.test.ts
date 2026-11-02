@@ -47,3 +47,9 @@ test("service due lists vehicles within the margin, most urgent first", () => {
   const trips = [trip(), trip({ vehicleId: "V2" }), trip({ vehicleId: "V3" })];
   assert.deepEqual(serviceDue(vehicles, trips).map((d) => [d.vehicle.id, d.kmLeft]), [["V3", 100], ["V1", 500]]);
 });
+
+test("service due with margin 0 lists only overdue and exactly-due vehicles", () => {
+  const vehicles = [vehicle(), vehicle({ id: "V2", serviceIntervalKm: 1000 }), vehicle({ id: "V3", serviceIntervalKm: 900 })];
+  const trips = [trip(), trip({ vehicleId: "V2" }), trip({ vehicleId: "V3" })];
+  assert.deepEqual(serviceDue(vehicles, trips, 0).map((d) => [d.vehicle.id, d.kmLeft]), [["V3", -100], ["V2", 0]]);
+});
