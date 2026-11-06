@@ -5,6 +5,7 @@ A small fleet analytics library and CLI. It is the **sandbox repository for the 
 ```sh
 npm test              # unit tests (node --test)
 npm run report        # summary over data/sample-trips.json
+node src/cli.ts data/sample-trips.json --margin 2000   # service-due list with a 2000 km margin (default 1000)
 ```
 
 ## What it does
