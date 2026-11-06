@@ -4,9 +4,14 @@
   "private": true,
   "type": "module",
   "description": "Small fleet analytics library: the sandbox repository the tb.lx factory works on.",
-  "engines": { "node": ">=22.18" },
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
     "test": "node --test test/*.test.ts",
     "report": "node src/cli.ts data/sample-trips.json"
+  },
+  "dependencies": {
+    "fleet-api": "github:moraisjose/tblx-factory-sandbox-api"
   }
 }
