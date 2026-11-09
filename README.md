@@ -11,6 +11,7 @@ npm run report        # summary over data/sample-trips.json
 
 - Fuel consumption (l/100 km) and driving hours per vehicle.
 - Km left to the next service, and which vehicles are due within a margin.
+- Driving hours per driver (trips without a driver count as "unassigned").
 
 ## Ideas for test tickets
 
