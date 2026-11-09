@@ -25,6 +25,11 @@ export function tripsByVehicle(trips: Trip[]): Map<string, Trip[]> {
   return out;
 }
 
+/** Fleet-wide totals over all trips: trip count, driving hours and consumption (total litres over total km). */
+export function fleetTotals(trips: Trip[]): { trips: number; hours: number; consumptionPer100Km: number } {
+  return { trips: trips.length, hours: drivingHours(trips), consumptionPer100Km: consumptionPer100Km(trips) };
+}
+
 /** Latest odometer reading seen for a vehicle, or undefined when it has no trips. */
 export function latestOdometer(trips: Trip[], vehicleId: string): number | undefined {
   let latest: number | undefined;
