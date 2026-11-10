@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { consumptionPer100Km, drivingHours, kmToService, latestOdometer, serviceDue, tripsByVehicle } from "../src/fleet.ts";
+import { consumptionPer100Km, drivingHours, forVehicle, kmToService, latestOdometer, serviceDue, tripsByVehicle } from "../src/fleet.ts";
 import type { Trip, Vehicle } from "../src/types.ts";
 
 const trip = (over: Partial<Trip> = {}): Trip => ({
@@ -46,4 +46,18 @@ test("service due lists vehicles within the margin, most urgent first", () => {
   const vehicles = [vehicle(), vehicle({ id: "V2", serviceIntervalKm: 10_000 }), vehicle({ id: "V3", serviceIntervalKm: 1100 })];
   const trips = [trip(), trip({ vehicleId: "V2" }), trip({ vehicleId: "V3" })];
   assert.deepEqual(serviceDue(vehicles, trips).map((d) => [d.vehicle.id, d.kmLeft]), [["V3", 100], ["V1", 500]]);
+});
+
+test("forVehicle keeps only the given vehicle and its trips", () => {
+  const vehicles = [vehicle(), vehicle({ id: "V2" })];
+  const trips = [trip(), trip({ vehicleId: "V2" }), trip()];
+  assert.deepEqual(forVehicle(vehicles, trips, "V2"), { vehicles: [vehicle({ id: "V2" })], trips: [trip({ vehicleId: "V2" })] });
+});
+
+test("forVehicle is undefined for an unknown vehicle", () => {
+  assert.equal(forVehicle([vehicle()], [trip()], "NOPE"), undefined);
+});
+
+test("forVehicle knows a vehicle that has no trips", () => {
+  assert.deepEqual(forVehicle([vehicle({ id: "V2" })], [trip()], "V2"), { vehicles: [vehicle({ id: "V2" })], trips: [] });
 });

@@ -52,6 +52,13 @@ export function serviceDue(vehicles: Vehicle[], trips: Trip[], marginKm = 1000):
   return due.sort((a, b) => a.kmLeft - b.kmLeft);
 }
 
+/** Narrows vehicles and trips to one vehicle; undefined when the id appears in neither. */
+export function forVehicle(vehicles: Vehicle[], trips: Trip[], vehicleId: string): { vehicles: Vehicle[]; trips: Trip[] } | undefined {
+  const scoped = { vehicles: vehicles.filter((v) => v.id === vehicleId), trips: trips.filter((t) => t.vehicleId === vehicleId) };
+  if (scoped.vehicles.length === 0 && scoped.trips.length === 0) return undefined;
+  return scoped;
+}
+
 function round(value: number, digits: number): number {
   const f = 10 ** digits;
   return Math.round(value * f) / f;
