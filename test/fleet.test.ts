@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { consumptionPer100Km, drivingHours, kmToService, latestOdometer, serviceDue, tripsByVehicle } from "../src/fleet.ts";
+import { consumptionPer100Km, distanceByVehicle, drivingHours, kmToService, latestOdometer, serviceDue, topVehicleByDistance, tripsByVehicle } from "../src/fleet.ts";
 import type { Trip, Vehicle } from "../src/types.ts";
 
 const trip = (over: Partial<Trip> = {}): Trip => ({
@@ -46,4 +46,31 @@ test("service due lists vehicles within the margin, most urgent first", () => {
   const vehicles = [vehicle(), vehicle({ id: "V2", serviceIntervalKm: 10_000 }), vehicle({ id: "V3", serviceIntervalKm: 1100 })];
   const trips = [trip(), trip({ vehicleId: "V2" }), trip({ vehicleId: "V3" })];
   assert.deepEqual(serviceDue(vehicles, trips).map((d) => [d.vehicle.id, d.kmLeft]), [["V3", 100], ["V1", 500]]);
+});
+
+test("distance is summed per vehicle", () => {
+  const result = distanceByVehicle([trip(), trip({ vehicleId: "V2", distanceKm: 50 }), trip({ distanceKm: 25.5 })]);
+  assert.deepEqual(result, new Map([["V1", 125.5], ["V2", 50]]));
+});
+
+test("distance per vehicle is rounded to 2 decimals", () => {
+  assert.equal(distanceByVehicle([trip({ distanceKm: 0.1 }), trip({ distanceKm: 0.2 })]).get("V1"), 0.3);
+});
+
+test("distance per vehicle is empty with no trips", () => {
+  const result = distanceByVehicle([]);
+  assert.ok(result instanceof Map);
+  assert.equal(result.size, 0);
+});
+
+test("top vehicle is the one with the most distance", () => {
+  assert.deepEqual(topVehicleByDistance([trip(), trip({ vehicleId: "V2", distanceKm: 150 }), trip({ distanceKm: 30 })]), { vehicleId: "V2", km: 150 });
+});
+
+test("top vehicle tie goes to the first vehicle seen", () => {
+  assert.deepEqual(topVehicleByDistance([trip({ vehicleId: "V2" }), trip()]), { vehicleId: "V2", km: 100 });
+});
+
+test("top vehicle is undefined with no trips", () => {
+  assert.equal(topVehicleByDistance([]), undefined);
 });

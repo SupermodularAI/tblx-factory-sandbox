@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { consumptionPer100Km, drivingHours, serviceDue, tripsByVehicle } from "./fleet.ts";
+import { consumptionPer100Km, drivingHours, serviceDue, topVehicleByDistance, tripsByVehicle } from "./fleet.ts";
 import type { Trip, Vehicle } from "./types.ts";
 
 // Usage: node src/cli.ts <data.json>   (data: { vehicles: Vehicle[], trips: Trip[] })
@@ -16,3 +16,5 @@ for (const [id, trips] of tripsByVehicle(data.trips)) {
 for (const { vehicle, kmLeft } of serviceDue(data.vehicles, data.trips)) {
   console.log(`service ${kmLeft < 0 ? "OVERDUE" : "due"}: ${vehicle.id} (${kmLeft} km)`);
 }
+const top = topVehicleByDistance(data.trips);
+console.log(top ? `Top vehicle by distance: ${top.vehicleId} (${top.km} km).` : "Top vehicle by distance: none.");

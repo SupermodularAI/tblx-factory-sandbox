@@ -25,6 +25,23 @@ export function tripsByVehicle(trips: Trip[]): Map<string, Trip[]> {
   return out;
 }
 
+/** Total distance in km per vehicle id. */
+export function distanceByVehicle(trips: Trip[]): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const trip of trips) out.set(trip.vehicleId, (out.get(trip.vehicleId) ?? 0) + trip.distanceKm);
+  for (const [id, km] of out) out.set(id, round(km, 2));
+  return out;
+}
+
+/** Vehicle with the most total distance, or undefined when there are no trips; ties go to the first vehicle seen. */
+export function topVehicleByDistance(trips: Trip[]): { vehicleId: string; km: number } | undefined {
+  let top: { vehicleId: string; km: number } | undefined;
+  for (const [vehicleId, km] of distanceByVehicle(trips)) {
+    if (top === undefined || km > top.km) top = { vehicleId, km };
+  }
+  return top;
+}
+
 /** Latest odometer reading seen for a vehicle, or undefined when it has no trips. */
 export function latestOdometer(trips: Trip[], vehicleId: string): number | undefined {
   let latest: number | undefined;
