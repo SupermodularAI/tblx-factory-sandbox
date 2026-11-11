@@ -25,6 +25,20 @@ export function tripsByVehicle(trips: Trip[]): Map<string, Trip[]> {
   return out;
 }
 
+/** Driving hours per driver id; trips without a driver are left out. */
+export function drivingHoursByDriver(trips: Trip[]): Map<string, number> {
+  const byDriver = new Map<string, Trip[]>();
+  for (const trip of trips) {
+    if (trip.driverId === undefined) continue;
+    const list = byDriver.get(trip.driverId) ?? [];
+    list.push(trip);
+    byDriver.set(trip.driverId, list);
+  }
+  const out = new Map<string, number>();
+  for (const [driverId, list] of byDriver) out.set(driverId, drivingHours(list));
+  return out;
+}
+
 /** Latest odometer reading seen for a vehicle, or undefined when it has no trips. */
 export function latestOdometer(trips: Trip[], vehicleId: string): number | undefined {
   let latest: number | undefined;

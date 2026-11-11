@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { consumptionPer100Km, drivingHours, kmToService, latestOdometer, serviceDue, tripsByVehicle } from "../src/fleet.ts";
+import { consumptionPer100Km, drivingHours, drivingHoursByDriver, kmToService, latestOdometer, serviceDue, tripsByVehicle } from "../src/fleet.ts";
 import type { Trip, Vehicle } from "../src/types.ts";
 
 const trip = (over: Partial<Trip> = {}): Trip => ({
@@ -24,6 +24,24 @@ test("consumption is 0 with no distance", () => {
 
 test("driving hours sums trip durations", () => {
   assert.equal(drivingHours([trip(), trip({ endedAt: "2026-10-01T08:30:00Z" })]), 2.5);
+});
+
+test("driving hours by driver sums each driver's trips", () => {
+  const hours = drivingHoursByDriver([
+    trip({ driverId: "D-17" }),
+    trip({ driverId: "D-04", endedAt: "2026-10-01T08:30:00Z" }),
+    trip({ driverId: "D-17", vehicleId: "V2", endedAt: "2026-10-01T08:20:00Z" }),
+  ]);
+  assert.deepEqual([...hours], [["D-17", 2.33], ["D-04", 0.5]]);
+});
+
+test("driving hours by driver leaves out trips without a driver", () => {
+  const hours = drivingHoursByDriver([trip(), trip({ driverId: "D-17" }), trip({ endedAt: "2026-10-01T12:00:00Z" })]);
+  assert.deepEqual([...hours], [["D-17", 2]]);
+});
+
+test("driving hours by driver is empty with no trips", () => {
+  assert.equal(drivingHoursByDriver([]).size, 0);
 });
 
 test("trips are grouped by vehicle", () => {
