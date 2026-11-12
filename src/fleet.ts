@@ -14,6 +14,20 @@ export function drivingHours(trips: Trip[]): number {
   return round(ms / 3_600_000, 2);
 }
 
+/** Driving hours per driver id; trips without a driver are left out. */
+export function drivingHoursByDriver(trips: Trip[]): Map<string, number> {
+  const byDriver = new Map<string, Trip[]>();
+  for (const trip of trips) {
+    if (trip.driverId === undefined) continue;
+    const list = byDriver.get(trip.driverId) ?? [];
+    list.push(trip);
+    byDriver.set(trip.driverId, list);
+  }
+  const out = new Map<string, number>();
+  for (const [driverId, list] of byDriver) out.set(driverId, drivingHours(list));
+  return out;
+}
+
 /** Groups trips by vehicle id. */
 export function tripsByVehicle(trips: Trip[]): Map<string, Trip[]> {
   const out = new Map<string, Trip[]>();
