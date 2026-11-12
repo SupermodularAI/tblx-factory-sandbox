@@ -14,6 +14,17 @@ export function drivingHours(trips: Trip[]): number {
   return round(ms / 3_600_000, 2);
 }
 
+/** Mean idle time in hours between consecutive trips of a vehicle, in start-time order; 0 with fewer than two trips. */
+export function averageIdleHours(trips: Trip[], vehicleId: string): number {
+  const own = trips
+    .filter((t) => t.vehicleId === vehicleId)
+    .sort((a, b) => Date.parse(a.startedAt) - Date.parse(b.startedAt));
+  if (own.length < 2) return 0;
+  let ms = 0;
+  for (let i = 1; i < own.length; i++) ms += Date.parse(own[i].startedAt) - Date.parse(own[i - 1].endedAt);
+  return round(ms / (own.length - 1) / 3_600_000, 2);
+}
+
 /** Groups trips by vehicle id. */
 export function tripsByVehicle(trips: Trip[]): Map<string, Trip[]> {
   const out = new Map<string, Trip[]>();
