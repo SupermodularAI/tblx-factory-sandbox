@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { consumptionPer100Km, drivingHours, kmToService, latestOdometer, serviceDue, tripsByVehicle } from "../src/fleet.ts";
+import { averageIdleHours, consumptionPer100Km, drivingHours, kmToService, latestOdometer, serviceDue, tripsByVehicle } from "../src/fleet.ts";
 import type { Trip, Vehicle } from "../src/types.ts";
 
 const trip = (over: Partial<Trip> = {}): Trip => ({
@@ -46,4 +46,47 @@ test("service due lists vehicles within the margin, most urgent first", () => {
   const vehicles = [vehicle(), vehicle({ id: "V2", serviceIntervalKm: 10_000 }), vehicle({ id: "V3", serviceIntervalKm: 1100 })];
   const trips = [trip(), trip({ vehicleId: "V2" }), trip({ vehicleId: "V3" })];
   assert.deepEqual(serviceDue(vehicles, trips).map((d) => [d.vehicle.id, d.kmLeft]), [["V3", 100], ["V1", 500]]);
+});
+
+const day = (time: string, date = "2026-10-01") => `${date}T${time}:00Z`;
+
+test("average idle hours is the mean gap between consecutive trips", () => {
+  const trips = [
+    trip({ startedAt: day("08:00"), endedAt: day("10:00") }),
+    trip({ vehicleId: "V2", startedAt: day("10:30"), endedAt: day("11:00") }),
+    trip({ startedAt: day("12:00"), endedAt: day("13:00") }),
+    trip({ startedAt: day("16:00"), endedAt: day("17:00") }),
+  ];
+  assert.equal(averageIdleHours(trips, "V1"), 2.5);
+});
+
+test("average idle hours is 0 with a single trip", () => {
+  assert.equal(averageIdleHours([trip(), trip({ vehicleId: "V2", startedAt: day("12:00"), endedAt: day("13:00") })], "V1"), 0);
+});
+
+test("average idle hours is 0 with no trips", () => {
+  assert.equal(averageIdleHours([], "V1"), 0);
+  assert.equal(averageIdleHours([trip()], "V9"), 0);
+});
+
+test("average idle hours orders trips by start time", () => {
+  const trips = [
+    trip({ startedAt: day("16:00"), endedAt: day("17:00") }),
+    trip({ startedAt: day("08:00"), endedAt: day("10:00") }),
+    trip({ startedAt: day("12:00"), endedAt: day("13:00") }),
+  ];
+  assert.equal(averageIdleHours(trips, "V1"), 2.5);
+});
+
+test("average idle hours is rounded to 2 decimals", () => {
+  assert.equal(averageIdleHours([trip({ startedAt: day("08:00"), endedAt: day("10:00") }), trip({ startedAt: day("10:20"), endedAt: day("11:00") })], "V1"), 0.33);
+});
+
+test("average idle hours ignores gaps longer than 24 hours", () => {
+  const trips = [
+    trip({ startedAt: day("08:00"), endedAt: day("10:00") }),
+    trip({ startedAt: day("12:00"), endedAt: day("13:00") }),
+    trip({ startedAt: day("19:00", "2026-10-02"), endedAt: day("20:00", "2026-10-02") }),
+  ];
+  assert.equal(averageIdleHours(trips, "V1"), 2);
 });

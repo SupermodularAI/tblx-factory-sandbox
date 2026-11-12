@@ -35,6 +35,23 @@ export function latestOdometer(trips: Trip[], vehicleId: string): number | undef
   return latest;
 }
 
+/** Mean idle time in hours between consecutive trips of a vehicle, ordered by start time; gaps longer than `maxGapHours` are left out. 0 when no gap counts. */
+export function averageIdleHours(trips: Trip[], vehicleId: string, maxGapHours = 24): number {
+  const own = trips
+    .filter((t) => t.vehicleId === vehicleId)
+    .sort((a, b) => Date.parse(a.startedAt) - Date.parse(b.startedAt));
+  let idleHours = 0;
+  let gaps = 0;
+  for (let i = 1; i < own.length; i++) {
+    const gap = (Date.parse(own[i].startedAt) - Date.parse(own[i - 1].endedAt)) / 3_600_000;
+    if (gap > maxGapHours) continue;
+    idleHours += gap;
+    gaps++;
+  }
+  if (gaps === 0) return 0;
+  return round(idleHours / gaps, 2);
+}
+
 /** Km left until the next service; negative when the service is overdue. */
 export function kmToService(vehicle: Vehicle, odometerKm: number): number {
   return vehicle.lastServiceKm + vehicle.serviceIntervalKm - odometerKm;
