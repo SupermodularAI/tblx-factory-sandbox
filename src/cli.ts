@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { consumptionPer100Km, drivingHours, serviceDue, tripsByVehicle } from "./fleet.ts";
+import { co2KgByVehicle, consumptionPer100Km, drivingHours, serviceDue, tripsByVehicle } from "./fleet.ts";
 import type { Trip, Vehicle } from "./types.ts";
 
 // Usage: node src/cli.ts <data.json>   (data: { vehicles: Vehicle[], trips: Trip[] })
@@ -16,3 +16,10 @@ for (const [id, trips] of tripsByVehicle(data.trips)) {
 for (const { vehicle, kmLeft } of serviceDue(data.vehicles, data.trips)) {
   console.log(`service ${kmLeft < 0 ? "OVERDUE" : "due"}: ${vehicle.id} (${kmLeft} km)`);
 }
+const co2 = co2KgByVehicle(data.vehicles, data.trips);
+let co2Total = 0;
+for (const [id, kg] of co2) {
+  console.log(`co2: ${id} ${kg} kg`);
+  co2Total += kg;
+}
+console.log(`co2 fleet total: ${Math.round(co2Total * 100) / 100} kg`);
