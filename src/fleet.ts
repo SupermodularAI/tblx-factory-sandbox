@@ -1,4 +1,4 @@
-import type { Trip, Vehicle } from "./types.ts";
+import type { FuelType, Trip, Vehicle } from "./types.ts";
 
 /** Fuel consumption in litres per 100 km over the given trips; 0 when no distance was driven. */
 export function consumptionPer100Km(trips: Trip[]): number {
@@ -50,6 +50,19 @@ export function serviceDue(vehicles: Vehicle[], trips: Trip[], marginKm = 1000):
     if (kmLeft <= marginKm) due.push({ vehicle, kmLeft });
   }
   return due.sort((a, b) => a.kmLeft - b.kmLeft);
+}
+
+/** kg of CO2 emitted per litre of fuel burned. */
+const CO2_KG_PER_LITRE: Record<FuelType, number> = { diesel: 2.68, petrol: 2.31, electric: 0 };
+
+/** kg of CO2 per vehicle from the fuel its trips used; a vehicle without a fuel type counts as diesel. */
+export function co2KgByVehicle(vehicles: Vehicle[], trips: Trip[]): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const vehicle of vehicles) {
+    const fuel = trips.reduce((sum, t) => (t.vehicleId === vehicle.id ? sum + t.fuelLitres : sum), 0);
+    out.set(vehicle.id, round(fuel * CO2_KG_PER_LITRE[vehicle.fuelType ?? "diesel"], 2));
+  }
+  return out;
 }
 
 function round(value: number, digits: number): number {

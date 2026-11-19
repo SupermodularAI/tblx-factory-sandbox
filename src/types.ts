@@ -1,3 +1,6 @@
+/** Fuel a vehicle runs on. */
+export type FuelType = "diesel" | "petrol" | "electric";
+
 export interface Vehicle {
   id: string;
   model: string;
@@ -5,6 +8,8 @@ export interface Vehicle {
   lastServiceKm: number;
   /** Service interval for this model, in km. */
   serviceIntervalKm: number;
+  /** Fuel the vehicle runs on. Absent when unknown. */
+  fuelType?: FuelType;
 }
 
 export interface Trip {
