@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { consumptionPer100Km, drivingHours, kmToService, latestOdometer, serviceDue, tripsByVehicle } from "../src/fleet.ts";
+import { consumptionPer100Km, drivingHours, kmToService, latestOdometer, longestTripByVehicle, serviceDue, tripsByVehicle } from "../src/fleet.ts";
 import type { Trip, Vehicle } from "../src/types.ts";
 
 const trip = (over: Partial<Trip> = {}): Trip => ({
@@ -46,4 +46,29 @@ test("service due lists vehicles within the margin, most urgent first", () => {
   const vehicles = [vehicle(), vehicle({ id: "V2", serviceIntervalKm: 10_000 }), vehicle({ id: "V3", serviceIntervalKm: 1100 })];
   const trips = [trip(), trip({ vehicleId: "V2" }), trip({ vehicleId: "V3" })];
   assert.deepEqual(serviceDue(vehicles, trips).map((d) => [d.vehicle.id, d.kmLeft]), [["V3", 100], ["V1", 500]]);
+});
+
+test("longest trip is the trip with the greatest distance per vehicle", () => {
+  const result = longestTripByVehicle([
+    trip({ distanceKm: 100 }),
+    trip({ distanceKm: 300, startedAt: "2026-10-02T08:00:00Z" }),
+    trip({ distanceKm: 200 }),
+    trip({ vehicleId: "V2", distanceKm: 50 }),
+  ]);
+  assert.equal(result.get("V1")?.distanceKm, 300);
+  assert.equal(result.get("V1")?.startedAt, "2026-10-02T08:00:00Z");
+  assert.equal(result.get("V2")?.distanceKm, 50);
+  assert.equal(result.size, 2);
+});
+
+test("on a distance tie the earlier trip wins", () => {
+  const result = longestTripByVehicle([
+    trip({ distanceKm: 300, startedAt: "2026-10-05T08:00:00Z" }),
+    trip({ distanceKm: 300, startedAt: "2026-10-03T08:00:00Z" }),
+  ]);
+  assert.equal(result.get("V1")?.startedAt, "2026-10-03T08:00:00Z");
+});
+
+test("longest trip map is empty with no trips", () => {
+  assert.equal(longestTripByVehicle([]).size, 0);
 });
