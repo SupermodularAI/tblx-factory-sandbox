@@ -25,6 +25,22 @@ export function tripsByVehicle(trips: Trip[]): Map<string, Trip[]> {
   return out;
 }
 
+/** Longest trip (by distance) per vehicle id; on a tie the earlier trip wins. Vehicles with no trips are absent. */
+export function longestTripByVehicle(trips: Trip[]): Map<string, Trip> {
+  const out = new Map<string, Trip>();
+  for (const trip of trips) {
+    const best = out.get(trip.vehicleId);
+    if (
+      best === undefined ||
+      trip.distanceKm > best.distanceKm ||
+      (trip.distanceKm === best.distanceKm && Date.parse(trip.startedAt) < Date.parse(best.startedAt))
+    ) {
+      out.set(trip.vehicleId, trip);
+    }
+  }
+  return out;
+}
+
 /** Latest odometer reading seen for a vehicle, or undefined when it has no trips. */
 export function latestOdometer(trips: Trip[], vehicleId: string): number | undefined {
   let latest: number | undefined;
