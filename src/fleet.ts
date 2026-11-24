@@ -25,6 +25,28 @@ export function tripsByVehicle(trips: Trip[]): Map<string, Trip[]> {
   return out;
 }
 
+/** Trip length categories from TLS-12, in report order. */
+export const TRIP_LENGTH_CATEGORIES = ["short", "regional", "long-haul"] as const;
+export type TripLengthCategory = (typeof TRIP_LENGTH_CATEGORIES)[number];
+
+/** Category of a trip by distance (TLS-12): short < 15 km, regional 15–120 km inclusive, long-haul > 120 km. */
+export function tripLengthCategory(trip: Trip): TripLengthCategory {
+  if (trip.distanceKm < 15) return "short";
+  if (trip.distanceKm <= 120) return "regional";
+  return "long-haul";
+}
+
+/** Number of trips in each length category per vehicle id; every category present, vehicles without trips absent. */
+export function tripCountsByCategory(trips: Trip[]): Map<string, Record<TripLengthCategory, number>> {
+  const out = new Map<string, Record<TripLengthCategory, number>>();
+  for (const trip of trips) {
+    const counts = out.get(trip.vehicleId) ?? { short: 0, regional: 0, "long-haul": 0 };
+    counts[tripLengthCategory(trip)]++;
+    out.set(trip.vehicleId, counts);
+  }
+  return out;
+}
+
 /** Latest odometer reading seen for a vehicle, or undefined when it has no trips. */
 export function latestOdometer(trips: Trip[], vehicleId: string): number | undefined {
   let latest: number | undefined;

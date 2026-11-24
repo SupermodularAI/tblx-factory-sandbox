@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { consumptionPer100Km, drivingHours, kmToService, latestOdometer, serviceDue, tripsByVehicle } from "../src/fleet.ts";
+import { consumptionPer100Km, drivingHours, kmToService, latestOdometer, serviceDue, tripCountsByCategory, tripLengthCategory, tripsByVehicle } from "../src/fleet.ts";
 import type { Trip, Vehicle } from "../src/types.ts";
 
 const trip = (over: Partial<Trip> = {}): Trip => ({
@@ -46,4 +46,36 @@ test("service due lists vehicles within the margin, most urgent first", () => {
   const vehicles = [vehicle(), vehicle({ id: "V2", serviceIntervalKm: 10_000 }), vehicle({ id: "V3", serviceIntervalKm: 1100 })];
   const trips = [trip(), trip({ vehicleId: "V2" }), trip({ vehicleId: "V3" })];
   assert.deepEqual(serviceDue(vehicles, trips).map((d) => [d.vehicle.id, d.kmLeft]), [["V3", 100], ["V1", 500]]);
+});
+
+test("trip length category: one trip in each category", () => {
+  assert.equal(tripLengthCategory(trip({ distanceKm: 5 })), "short");
+  assert.equal(tripLengthCategory(trip({ distanceKm: 60 })), "regional");
+  assert.equal(tripLengthCategory(trip({ distanceKm: 300 })), "long-haul");
+});
+
+test("trip length category: trips on and around each limit", () => {
+  assert.equal(tripLengthCategory(trip({ distanceKm: 14.9 })), "short");
+  assert.equal(tripLengthCategory(trip({ distanceKm: 15 })), "regional");
+  assert.equal(tripLengthCategory(trip({ distanceKm: 120 })), "regional");
+  assert.equal(tripLengthCategory(trip({ distanceKm: 120.1 })), "long-haul");
+});
+
+test("trip counts by category per vehicle, with zeros", () => {
+  const trips = [trip({ distanceKm: 10 }), trip({ distanceKm: 15 }), trip({ distanceKm: 120 }), trip({ vehicleId: "V2", distanceKm: 121 })];
+  assert.deepEqual(
+    tripCountsByCategory(trips),
+    new Map([
+      ["V1", { short: 1, regional: 2, "long-haul": 0 }],
+      ["V2", { short: 0, regional: 0, "long-haul": 1 }],
+    ]),
+  );
+});
+
+test("trip counts by category is empty for no trips", () => {
+  assert.equal(tripCountsByCategory([]).size, 0);
+});
+
+test("category counts keep TLS-12 order", () => {
+  assert.deepEqual(Object.keys(tripCountsByCategory([trip()]).get("V1")!), ["short", "regional", "long-haul"]);
 });
